@@ -1,6 +1,6 @@
 <html>
 <canvas id="gameCanvas" width="800" height="600"></canvas>
-<script type="text/javascript">
+	<script type="text/javascript">
 	var canvas;
 	var canvasContext;
 	var ballX = 0;
@@ -9,221 +9,222 @@
 	var ballSpeedAxisY = 0;
 	var paddleLeftAxisY;
 	var paddleRightAxisY;
-	var PADDLE_LEFT_AXIS_X;
-	var PADDLE_RIGHT_AXIS_X;
-	var aiPaddleSpeed = 12;
+	var paddle_left_axis_x;
+	var paddle_right_axis_x;
+	var aiPaddleSpeed = 25;
 	var playerScore = 0;
 	var aiScore = 0;
 	var showTitleScreen = true;
 	var firstLaunch = true;
+	const FRAMES_PER_SECOND = 50;
 	const PADDLE_HEGHT = 100;
 	const PADDLE_WIDTH = 10;
 	const PADDLE_SIDE_PADDING = 10;
 	const PADDLE_TOP_PADDING = 10;
 	const PADDLE_BOTTOM_PADDING = 10;
-	const HALF_PADDLE_HEGHT = PADDLE_HEGHT/2;
-	const yAxisSpeedCoefficient = 0.35;
-	const MAX_WINNING_SCORE = 3;
-
+	const HALF_PADDLE_HEGHT = PADDLE_HEGHT / 2;
+	const Y_AXIS_SPEED_COEFFICIENT = 0.35;
+	const MAX_WINNING_SCORE = 10;
+	const PONG_TEXT = "PONG";
+	const START_TEXT = "Click to start the Game";
+	const WIN_TEXT = 'You WON!';
+	const LOOSE_TEXT = 'You LOST!';
 
 	function getMouseCoordinates(event) {
-		var rect = canvas.getBoundingClientRect();
-		var root = document.documentElement;
-		var mouseX = event.clientX - rect.left - root.scrollLeft;
-		var mouseY = event.clientY - rect.top - root.scrollTop;
-		return {
-			x: mouseX,
-			y: mouseY
-		};
+	    var rect = canvas.getBoundingClientRect();
+	    var root = document.documentElement;
+	    var mouseX = event.clientX - rect.left - root.scrollLeft;
+	    var mouseY = event.clientY - rect.top - root.scrollTop;
+	    return {
+	        x: mouseX,
+	        y: mouseY
+	    };
 	}
 
-	window.onload = function(){
-		
-		canvas = document.getElementById("gameCanvas");
-		canvasContext = canvas.getContext("2d");
-		paddleLeftAxisY = canvas.height/2 - HALF_PADDLE_HEGHT;
-		paddleRightAxisY = canvas.height/2 - HALF_PADDLE_HEGHT;
-		PADDLE_LEFT_AXIS_X = 10;
-		PADDLE_RIGHT_AXIS_X = canvas.width - PADDLE_WIDTH - PADDLE_SIDE_PADDING;
+	window.onload = function() {
 
-		ballReset();
+	    canvas = document.getElementById("gameCanvas");
+	    canvasContext = canvas.getContext("2d");
+	    paddleLeftAxisY = canvas.height / 2 - HALF_PADDLE_HEGHT;
+	    paddleRightAxisY = canvas.height / 2 - HALF_PADDLE_HEGHT;
+	    paddle_left_axis_x = 10;
+	    paddle_right_axis_x = canvas.width - PADDLE_WIDTH - PADDLE_SIDE_PADDING;
 
-		var framesPerSecond = 35;		
-	
-		setInterval(function(){
-			renderScene();
-			move();		
-		}, 1000/framesPerSecond);
+	    addEventListeners();
 
-		canvas.addEventListener('mousedown', function(event) {
-			firstLaunch = false;
-			if (showTitleScreen == true) {
-			playerScore = 0;
-			aiScore = 0;
-			showTitleScreen = false; 
-		}
-	});
+	    ballReset();
 
-		canvas.addEventListener('mousemove', function(event){
-			var mousePosition = getMouseCoordinates(event);
-			paddleLeftAxisY = mousePosition.y - HALF_PADDLE_HEGHT;
-		});
-	
-}
-
-	function ballReset(){
-		if (playerScore >= MAX_WINNING_SCORE || aiScore >= MAX_WINNING_SCORE) {
-			showTitleScreen = true;
-		}
-
-		ballSpeedAxisX = -ballSpeedAxisX;
-		ballSpeedAxisY = 0;
-		ballX = canvas.width/2;
-		ballY = canvas.height/2;
+	    setInterval(function() {
+	        renderScene();
+	        move();
+	    }, 1000 / FRAMES_PER_SECOND);
 	}
 
-	function aiPaddleMove(){
-		var paddleCenter = paddleRightAxisY + HALF_PADDLE_HEGHT;
-		
-		if (paddleCenter < ballY - 50) {
-			paddleRightAxisY += aiPaddleSpeed;
-		} 
-		else if (paddleCenter > ballY + 50) {
-			paddleRightAxisY -= aiPaddleSpeed;
-		}
+	function addEventListeners() {
+	    canvas.addEventListener('mousedown', function(event) {
+	        firstLaunch = false;
+	        if (showTitleScreen == true) {
+	            playerScore = 0;
+	            aiScore = 0;
+	            showTitleScreen = false;
+	        }
+	    });
+
+	    canvas.addEventListener('mousemove', function(event) {
+	        var mousePosition = getMouseCoordinates(event);
+	        paddleLeftAxisY = mousePosition.y - HALF_PADDLE_HEGHT;
+	    });
 	}
 
-	function move(){
+	function ballReset() {
+	    if (playerScore >= MAX_WINNING_SCORE || aiScore >= MAX_WINNING_SCORE) {
+	        showTitleScreen = true;
+	    }
 
-		if (showTitleScreen) {
-			return;
-		}
-
-		aiPaddleMove();
-
-		ballX += ballSpeedAxisX;
-		ballY += ballSpeedAxisY;
-
-		//For the left side
-		if (ballX <= PADDLE_WIDTH + PADDLE_SIDE_PADDING) {
-			if (ballY >= paddleLeftAxisY && ballY <= paddleLeftAxisY + PADDLE_HEGHT) {
-				ballSpeedAxisX = -ballSpeedAxisX;
-				var deltaY = ballY - (paddleLeftAxisY + HALF_PADDLE_HEGHT);
-				ballSpeedAxisY = deltaY * yAxisSpeedCoefficient;
-			}
-			else {
-				aiScore++;
-				ballReset();			
-			}
-		}
-
-		//For the right side
-		if (ballX >= canvas.width - PADDLE_WIDTH - PADDLE_SIDE_PADDING) {
-			if (ballY >= paddleRightAxisY && ballY <= paddleRightAxisY + PADDLE_HEGHT) {
-				ballSpeedAxisX = -ballSpeedAxisX;
-				var deltaY = ballY - (paddleRightAxisY + HALF_PADDLE_HEGHT);
-				ballSpeedAxisY = deltaY * yAxisSpeedCoefficient;
-			}
-			else {
-				playerScore++;
-				ballReset();
-			}
-		}
-
-		if (ballX >= canvas.width) {
-			ballSpeedAxisX = -ballSpeedAxisX;
-		}
-		if (ballY >= canvas.height || ballY <= 0) {
-			ballSpeedAxisY = -ballSpeedAxisY;
-		}
+	    ballSpeedAxisX = -ballSpeedAxisX;
+	    ballSpeedAxisY = 0;
+	    ballX = canvas.width / 2;
+	    ballY = canvas.height / 2;
 	}
 
-	function renderScene(){
-		drawGameField(0, 0, canvas.width, canvas.height, 'black'); 
+	function move() {
 
-		if (showTitleScreen) {
+	    if (showTitleScreen) {
+	        return;
+	    }
 
-			var pongText = "PONG";
-			var startText = "Click to start the Game";
-			var winText = 'You WON!';
-			var looseText = 'You LOOSE!';
-			canvasContext.fillStyle = 'white';
+	    aiPaddleMove();
 
-			if (!firstLaunch) {
-			if (playerScore >= MAX_WINNING_SCORE) {
-				canvasContext.fillText(winText, canvas.width/2 - 35, canvas.height/2 - 30);
-			}
-			else {
-				canvasContext.fillText(looseText, canvas.width/2 - 40, canvas.height/2 - 30);
-			}
-		}
-		canvasContext.fillText(pongText, canvas.width/2 - 25, canvas.height/2 - 100);
-		canvasContext.fillText(startText, canvas.width/2 - 60, canvas.height/2);
-		return;
-		}
+	    ballX += ballSpeedAxisX;
+	    ballY += ballSpeedAxisY;
 
-		preservePaddleVerticalPlacement();
-		//Left paddle
-		drawPaddle(PADDLE_LEFT_AXIS_X, paddleLeftAxisY, PADDLE_WIDTH, PADDLE_HEGHT, 'white');
-		//Right paddle
-		drawPaddle(PADDLE_RIGHT_AXIS_X, paddleRightAxisY, PADDLE_WIDTH, PADDLE_HEGHT, 'white');
-		drawNet();
-		drawBall(ballX, ballY, 10, 'white');
-		drawScore();
+	    //For the left side
+	    if (ballX <= PADDLE_WIDTH + PADDLE_SIDE_PADDING) {
+	        if (ballY >= paddleLeftAxisY && ballY <= paddleLeftAxisY + PADDLE_HEGHT) {
+	            ballSpeedAxisX = -ballSpeedAxisX;
+	            var deltaY = ballY - (paddleLeftAxisY + HALF_PADDLE_HEGHT);
+	            ballSpeedAxisY = deltaY * Y_AXIS_SPEED_COEFFICIENT;
+	        } else {
+	            aiScore++;
+	            ballReset();
+	        }
+	    }
+
+	    //For the right side
+	    if (ballX >= canvas.width - PADDLE_WIDTH - PADDLE_SIDE_PADDING) {
+	        if (ballY >= paddleRightAxisY && ballY <= paddleRightAxisY + PADDLE_HEGHT) {
+	            ballSpeedAxisX = -ballSpeedAxisX;
+	            var deltaY = ballY - (paddleRightAxisY + HALF_PADDLE_HEGHT);
+	            ballSpeedAxisY = deltaY * Y_AXIS_SPEED_COEFFICIENT;
+	        } else {
+	            playerScore++;
+	            ballReset();
+	        }
+	    }
+
+	    if (ballX >= canvas.width) {
+	        ballSpeedAxisX = -ballSpeedAxisX;
+	    }
+	    if (ballY >= canvas.height || ballY <= 0) {
+	        ballSpeedAxisY = -ballSpeedAxisY;
+	    }
 	}
 
-	function drawGameField(xCoord, yCoord, width, height, color){
-		 drawRectangle(xCoord, yCoord, width, height, color);
-	}
+	function aiPaddleMove() {
+	    var paddleCenter = paddleRightAxisY + HALF_PADDLE_HEGHT;
 
-	function drawPaddle(xCoord, yCoord, width, height, color){
-		 drawRectangle(xCoord, yCoord, width, height, color);
-	}
-
-	function drawBall(xCoord, yCoord, radius, color){
-		canvasContext.fillStyle = color;
-		canvasContext.beginPath();
-		canvasContext.arc(xCoord, yCoord, radius, 0, Math.PI*2, true);
-		canvasContext.fill();
-	}
-
-	function drawRectangle(xCoord, yCoord, width, height, color){
-		canvasContext.fillStyle = color;
-		canvasContext.fillRect(xCoord, yCoord, width, height);
+	    if (paddleCenter < ballY - 50) {
+	        paddleRightAxisY += aiPaddleSpeed;
+	    } else if (paddleCenter > ballY + 50) {
+	        paddleRightAxisY -= aiPaddleSpeed;
+	    }
 	}
 
 	//Always keep Player's paddle 10px away from GameField borders by Y-axis
-	function preservePaddleVerticalPlacement(){	
-		//Top side
-		if (paddleLeftAxisY <= PADDLE_TOP_PADDING){
-			paddleLeftAxisY = 10;
-		}
-		//Bottom side
-		if (canvas.height - (paddleLeftAxisY + PADDLE_HEGHT) <= PADDLE_BOTTOM_PADDING){
-			paddleLeftAxisY = canvas.height - PADDLE_HEGHT - PADDLE_BOTTOM_PADDING;
-		}
+	function preservePaddleVerticalPlacement() {
+	    //Top side
+	    if (paddleLeftAxisY <= PADDLE_TOP_PADDING) {
+	        paddleLeftAxisY = 10;
+	    }
+	    //Bottom side
+	    if (canvas.height - (paddleLeftAxisY + PADDLE_HEGHT) <= PADDLE_BOTTOM_PADDING) {
+	        paddleLeftAxisY = canvas.height - PADDLE_HEGHT - PADDLE_BOTTOM_PADDING;
+	    }
 
-		//Top side
-		if (paddleRightAxisY <= PADDLE_TOP_PADDING){
-			paddleRightAxisY = 10;
-		}
-		//Bottom side
-		if (canvas.height - (paddleRightAxisY + PADDLE_HEGHT) <= PADDLE_BOTTOM_PADDING){
-			paddleRightAxisY = canvas.height - PADDLE_HEGHT - PADDLE_BOTTOM_PADDING;
-		}
+	    //Top side
+	    if (paddleRightAxisY <= PADDLE_TOP_PADDING) {
+	        paddleRightAxisY = 10;
+	    }
+	    //Bottom side
+	    if (canvas.height - (paddleRightAxisY + PADDLE_HEGHT) <= PADDLE_BOTTOM_PADDING) {
+	        paddleRightAxisY = canvas.height - PADDLE_HEGHT - PADDLE_BOTTOM_PADDING;
+	    }
 	}
 
-	function drawScore(){
-		// var score = playerScore + " : " + aiScore; 
-		// canvasContext.fillText(score, canvas.width/2, 50);
-		canvasContext.fillText(playerScore, 100, 50);
-		canvasContext.fillText(aiScore, canvas.width-100, 50);
+	function renderScene() {
+
+	    //Before checking of showTitleScreen in order to draw some background for title screen
+	    drawGameField(0, 0, canvas.width, canvas.height, 'black');
+
+	    // If it's a game over or first launch
+	    if (showTitleScreen) {
+	        canvasContext.fillStyle = 'white';
+	        drawScreenText();
+	        return;
+	    }
+
+	    preservePaddleVerticalPlacement();
+	    //Left paddle
+	    drawPaddle(paddle_left_axis_x, paddleLeftAxisY, PADDLE_WIDTH, PADDLE_HEGHT, 'white');
+	    //Right paddle
+	    drawPaddle(paddle_right_axis_x, paddleRightAxisY, PADDLE_WIDTH, PADDLE_HEGHT, 'white');
+	    drawNet();
+	    drawBall(ballX, ballY, 10, 'white');
+	    drawScore();
 	}
 
-	function drawNet(){
-		for (var i = 0; i < canvas.height; i+=40){
-			drawRectangle(canvas.width/2-1, i, 2, 20, 'white');
-		}
+	function drawGameField(xCoord, yCoord, width, height, color) {
+	    drawRectangle(xCoord, yCoord, width, height, color);
 	}
-</script>
+
+	function drawPaddle(xCoord, yCoord, width, height, color) {
+	    drawRectangle(xCoord, yCoord, width, height, color);
+	}
+
+	function drawBall(xCoord, yCoord, radius, color) {
+	    canvasContext.fillStyle = color;
+	    canvasContext.beginPath();
+	    canvasContext.arc(xCoord, yCoord, radius, 0, Math.PI * 2, true);
+	    canvasContext.fill();
+	}
+
+	function drawRectangle(xCoord, yCoord, width, height, color) {
+	    canvasContext.fillStyle = color;
+	    canvasContext.fillRect(xCoord, yCoord, width, height);
+	}
+
+	function drawScreenText() {
+	    //Draw winning or loosing text only if there was a game
+	    if (!firstLaunch) {
+	        if (playerScore >= MAX_WINNING_SCORE) {
+	            canvasContext.fillText(WIN_TEXT, canvas.width / 2 - 35, canvas.height / 2 - 30);
+	        } else {
+	            canvasContext.fillText(LOOSE_TEXT, canvas.width / 2 - 35, canvas.height / 2 - 30);
+	        }
+	    }
+	    canvasContext.fillText(PONG_TEXT, canvas.width / 2 - 25, canvas.height / 2 - 100);
+	    canvasContext.fillText(START_TEXT, canvas.width / 2 - 60, canvas.height / 2);
+	}
+
+	function drawScore() {
+	    canvasContext.fillText(playerScore, 100, 50);
+	    canvasContext.fillText(aiScore, canvas.width - 100, 50);
+	}
+
+	function drawNet() {
+	    for (var i = 10; i < canvas.height; i += 40) {
+	        drawRectangle(canvas.width / 2 - 1, i, 2, 20, 'white');
+	    }
+	}
+	</script>
 </html>
